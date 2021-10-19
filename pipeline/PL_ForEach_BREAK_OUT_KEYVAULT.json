@@ -55,7 +55,7 @@
 					"isSequential": true,
 					"activities": [
 						{
-							"name": "Copy Files to ADLS",
+							"name": "Copy Rows to ADLS",
 							"type": "Copy",
 							"dependsOn": [
 								{
