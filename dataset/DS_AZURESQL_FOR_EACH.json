@@ -1,0 +1,17 @@
+{
+	"name": "DS_AZURESQL_FOR_EACH",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSQLDB1",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"EmployeeName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}
