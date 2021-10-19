@@ -788,10 +788,7 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"url": {
-								"value": "@pipeline().parameters.sub_value",
-								"type": "Expression"
-							},
+							"url": "https://njl-keyvault.vault.azure.net/secrets/subscription-value/a24f50dacb5d406fbfb2c3fcd9897c63?api-version=7.0",
 							"connectVia": {
 								"referenceName": "MYAZUREIR",
 								"type": "IntegrationRuntimeReference"
