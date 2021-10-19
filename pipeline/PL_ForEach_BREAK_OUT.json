@@ -115,7 +115,13 @@
 							"outputs": [
 								{
 									"referenceName": "DS_OUTPUT_FOR_EACH",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"FileName": {
+											"value": "@concat(item().employee_name, '_','seconditer', '.csv')",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						},
