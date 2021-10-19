@@ -182,7 +182,7 @@
 				"typeProperties": {
 					"variableName": "PipelineRunId",
 					"value": {
-						"value": "@concat('https://management.azure.com/subscriptions/126c93ce-f0a6-493c-8991-cdcbd797366d/resourceGroups/njl-adf-practice/providers/Microsoft.DataFactory/factories/', pipeline().DataFactory, '/pipelineruns/', pipeline().RunId, '/cancel?api-version=2018-06-01')",
+						"value": "@concat('https://management.azure.com/subscriptions/126c93ce-f0a6-493c-8991-cdcbd797366d/resourceGroups/adf_clean/providers/Microsoft.DataFactory/factories/', pipeline().DataFactory, '/pipelineruns/', pipeline().RunId, '/cancel?api-version=2018-06-01')",
 						"type": "Expression"
 					}
 				}
