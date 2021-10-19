@@ -582,7 +582,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Lookup1",
+						"name": "Lookup SQL Table",
 						"type": "Lookup",
 						"dependsOn": [
 							{
@@ -616,11 +616,11 @@
 						}
 					},
 					{
-						"name": "ForEach1",
+						"name": "For Each Check Condition",
 						"type": "ForEach",
 						"dependsOn": [
 							{
-								"activity": "Lookup1",
+								"activity": "Lookup SQL Table",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -629,17 +629,17 @@
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@activity('Lookup1').output.value",
+								"value": "@activity('Lookup SQL Table').output.value",
 								"type": "Expression"
 							},
 							"isSequential": true,
 							"activities": [
 								{
-									"name": "Copy data1",
+									"name": "Copy Files to ADLS",
 									"type": "Copy",
 									"dependsOn": [
 										{
-											"activity": "If Condition1",
+											"activity": "If Condition Check Condition",
 											"dependencyConditions": [
 												"Succeeded"
 											]
@@ -706,7 +706,7 @@
 									]
 								},
 								{
-									"name": "If Condition1",
+									"name": "If Condition Check Condition",
 									"type": "IfCondition",
 									"dependsOn": [],
 									"userProperties": [],
@@ -760,7 +760,7 @@
 						"type": "SetVariable",
 						"dependsOn": [
 							{
-								"activity": "Web1",
+								"activity": "Web Get Key Vault Secret",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -770,13 +770,13 @@
 						"typeProperties": {
 							"variableName": "PipelineRunId",
 							"value": {
-								"value": "@concat('https://management.azure.com/subscriptions/', activity('Web1').output.value, '/resourceGroups/adf_clean/providers/Microsoft.DataFactory/factories/', pipeline().DataFactory, '/pipelineruns/', pipeline().RunId, '/cancel?api-version=2018-06-01')",
+								"value": "@concat('https://management.azure.com/subscriptions/', activity('Web Get Key Vault Secret').output.value, '/resourceGroups/adf_clean/providers/Microsoft.DataFactory/factories/', pipeline().DataFactory, '/pipelineruns/', pipeline().RunId, '/cancel?api-version=2018-06-01')",
 								"type": "Expression"
 							}
 						}
 					},
 					{
-						"name": "Web1",
+						"name": "Web Get Key Vault Secret",
 						"type": "WebActivity",
 						"dependsOn": [],
 						"policy": {
@@ -811,12 +811,6 @@
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
-				},
-				"parameters": {
-					"sub_value": {
-						"type": "string",
-						"defaultValue": "https://njl-keyvault.vault.azure.net/secrets/subscription-value/a24f50dacb5d406fbfb2c3fcd9897c63?api-version=7.0"
-					}
 				},
 				"variables": {
 					"PipelineRunId": {
