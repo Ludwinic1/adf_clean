@@ -25,68 +25,6 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureSQLDB1')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"connectionString": "[parameters('AzureSQLDB1_connectionString')]"
-				},
-				"connectVia": {
-					"referenceName": "MYAZUREIR",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/MYAZUREIR')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/MYAZUREIR')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "Managed",
-				"typeProperties": {
-					"computeProperties": {
-						"location": "Central US",
-						"dataFlowProperties": {
-							"computeType": "General",
-							"coreCount": 8,
-							"timeToLive": 10,
-							"cleanup": false
-						}
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DataLake1')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('DataLake1_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('DataLake1_accountKey')]"
-					}
-				},
-				"connectVia": {
-					"referenceName": "MYAZUREIR",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/MYAZUREIR')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/PL_ForEach_BREAK_OUT')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -274,7 +212,7 @@
 						"typeProperties": {
 							"variableName": "PipelineRunId",
 							"value": {
-								"value": "@concat('https://management.azure.com/subscriptions/126c93ce-f0a6-493c-8991-cdcbd797366d/resourceGroups/njl-adf-practice/providers/Microsoft.DataFactory/factories/', pipeline().DataFactory, '/pipelineruns/', pipeline().RunId, '/cancel?api-version=2018-06-01')",
+								"value": "@concat('https://management.azure.com/subscriptions/126c93ce-f0a6-493c-8991-cdcbd797366d/resourceGroups/adf_clean/providers/Microsoft.DataFactory/factories/', pipeline().DataFactory, '/pipelineruns/', pipeline().RunId, '/cancel?api-version=2018-06-01')",
 								"type": "Expression"
 							}
 						}
@@ -302,24 +240,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DS_AZURE_TABLES')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureSQLDB1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureSQLDB1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/DS_AZURESQL_FOR_EACH')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -340,6 +260,24 @@
 					"schema": "dbo",
 					"table": "employees"
 				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSQLDB1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_AZURE_TABLES')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSQLDB1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureSQLDB1')]"
@@ -393,6 +331,68 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/DataLake1')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSQLDB1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureSQLDB1_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "MYAZUREIR",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/MYAZUREIR')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DataLake1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('DataLake1_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('DataLake1_accountKey')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "MYAZUREIR",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/MYAZUREIR')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MYAZUREIR')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "Central US",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 10,
+							"cleanup": false
+						}
+					}
+				}
+			},
+			"dependsOn": []
 		}
 	]
 }
