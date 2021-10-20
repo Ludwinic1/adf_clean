@@ -1,0 +1,263 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adf-njl-clean"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_ForEach_BREAK_OUT_KEYVAULT')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup SQL Table",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Set PipelineRunId",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT * FROM employees",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "DS_AZURE_TABLES",
+								"type": "DatasetReference"
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "For Each Check Condition",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup SQL Table",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup SQL Table').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Copy to ADLS",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "If Condition Check Condition",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": true,
+										"secureInput": true
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_AZURESQL_FOR_EACH",
+											"type": "DatasetReference",
+											"parameters": {
+												"EmployeeName": {
+													"value": "@item().employee_name",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_OUTPUT_FOR_EACH",
+											"type": "DatasetReference",
+											"parameters": {
+												"FileName": {
+													"value": "@concat(item().employee_name, '_','thirditer', '.csv')",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "If Condition Check Condition",
+									"type": "IfCondition",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@equals(item().employee_name, 'Jane')",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "Break Out",
+												"type": "WebActivity",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "7.00:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": true,
+													"secureInput": true
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"url": {
+														"value": "@variables('PipelineRunId')",
+														"type": "Expression"
+													},
+													"connectVia": {
+														"referenceName": "MYAZUREIR",
+														"type": "IntegrationRuntimeReference"
+													},
+													"method": "POST",
+													"body": {
+														"value": "{“message”:”Cancelling the pipeline”}",
+														"type": "Expression"
+													},
+													"authentication": {
+														"type": "MSI",
+														"resource": "https://management.azure.com"
+													}
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Set PipelineRunId",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Web Get Key Vault Secret",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "PipelineRunId",
+							"value": {
+								"value": "@concat('https://management.azure.com/subscriptions/', activity('Web Get Key Vault Secret').output.value, '/resourceGroups/adf_clean/providers/Microsoft.DataFactory/factories/', pipeline().DataFactory, '/pipelineruns/', pipeline().RunId, '/cancel?api-version=2018-06-01')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Web Get Key Vault Secret",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://njl-keyvault.vault.azure.net/secrets/subscription-value/a24f50dacb5d406fbfb2c3fcd9897c63?api-version=7.0",
+							"connectVia": {
+								"referenceName": "MYAZUREIR",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "GET",
+							"linkedServices": [
+								{
+									"referenceName": "AzureKeyVault1",
+									"type": "LinkedServiceReference"
+								}
+							],
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
+					}
+				],
+				"variables": {
+					"PipelineRunId": {
+						"type": "String"
+					},
+					"Subscription_Value": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Try-Else"
+				},
+				"annotations": [
+					"FirstAnnotation"
+				]
+			},
+			"dependsOn": []
+		}
+	]
+}
